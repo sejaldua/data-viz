@@ -104,26 +104,14 @@
                    dimension * (2 / 10),
                    dimension * (1 / 10)
                   ];
-        // figure out how to remove if else
         for (var i = 0; i < 9; i++) {
-            if (i % 2 == 0) {
-                var c_i = svg.append("circle")
-                    .attr("cx", dimension / 10)
-                    .attr("cy", dimension - (dimension / 10))
-                    .attr("r",  radius2)
-                    .attr("fill", "#DCA5AF")
-                    .attr("ci", i)
-                    .attr("cj", i)
-            }
-            else {
-                var c_i = svg.append("circle")
-                    .attr("cx", dimension - (dimension / 10))
-                    .attr("cy", dimension / 10)
-                    .attr("r",  radius2)
-                    .attr("fill", "#DCA5AF")
-                    .attr("ci", i)
-                    .attr("cj", i)
-            }
+            var c_i = svg.append("circle")
+                .attr("cx", get_corner_x(i))
+                .attr("cy", get_corner_y(i))
+                .attr("r",  radius2)
+                .attr("fill", "#DCA5AF")
+                .attr("ci", i)
+                .attr("cj", i)
             small_circs.push(c_i);
         }
 
