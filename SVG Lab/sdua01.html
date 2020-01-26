@@ -53,31 +53,31 @@
         /* initialize some vars */
         var isAligned = false;
         var fill = ["#BFDDE2", 
-                    "#AFD4DB", 
-                    "#A0CCD3", 
-                    "#90C3CC", 
-                    "#80BBC5", 
-                    "#70B2BE", 
-                    "#60AAB7", 
-                    "#51A2B0", 
-                    "#4A94A0",
-                    "#438591"
-                   ];
+            "#AFD4DB", 
+            "#A0CCD3", 
+            "#90C3CC", 
+            "#80BBC5", 
+            "#70B2BE", 
+            "#60AAB7", 
+            "#51A2B0", 
+            "#4A94A0",
+            "#438591"
+            ];
 
         /* generate larger circles */
         var circles   = [ ];
         var radius = dimension / 20;
-		var diag_coords = [dimension * (10 / 10) - radius,
-                   dimension * (9 / 10) - radius,
-                   dimension * (8 / 10) - radius,
-                   dimension * (7 / 10) - radius,
-                   dimension * (6 / 10) - radius,
-                   dimension * (5 / 10) - radius,
-                   dimension * (4 / 10) - radius,
-                   dimension * (3 / 10) - radius,
-                   dimension * (2 / 10) - radius,
-                   dimension * (1 / 10) - radius
-                  ];
+        var diag_coords = [dimension * (10 / 10) - radius,
+            dimension * (9 / 10) - radius,
+            dimension * (8 / 10) - radius,
+            dimension * (7 / 10) - radius,
+            dimension * (6 / 10) - radius,
+            dimension * (5 / 10) - radius,
+            dimension * (4 / 10) - radius,
+            dimension * (3 / 10) - radius,
+            dimension * (2 / 10) - radius,
+            dimension * (1 / 10) - radius
+            ];
         for (var i = 0; i < 10; i++) {
             var rand_pos1 = get_rand_pos()
             var rand_pos2 = get_rand_pos()
@@ -95,15 +95,15 @@
         var small_circs = [ ];
         var radius2 = (dimension * Math.sqrt(2) - dimension)/18
         var gaps = [dimension * (9 / 10),
-                   dimension * (8 / 10),
-                   dimension * (7 / 10),
-                   dimension * (6 / 10),
-                   dimension * (5 / 10),
-                   dimension * (4 / 10),
-                   dimension * (3 / 10),
-                   dimension * (2 / 10),
-                   dimension * (1 / 10)
-                  ];
+            dimension * (8 / 10),
+            dimension * (7 / 10),
+            dimension * (6 / 10),
+            dimension * (5 / 10),
+            dimension * (4 / 10),
+            dimension * (3 / 10),
+            dimension * (2 / 10),
+            dimension * (1 / 10)
+            ];
         for (var i = 0; i < 9; i++) {
             var c_i = svg.append("circle")
                 .attr("cx", get_corner_x(i))
@@ -135,61 +135,61 @@
         /* toggle alignment */
         svg.on("click", function() {
 
-            /* larger circles align */
-            for (var i = 0; i < circles.length; i++) {
-                var c    = circles[i];
-                var ci   = parseInt(c.attr("ci"));
-                var cj   = parseInt(c.attr("cj"));
-                var nx   = get_rand_pos()
-                var ny   = get_rand_pos()
-                var cx   = (isAligned ? nx : diag_coords[ci]);
-                var cy   = (isAligned ? ny : diag_coords[cj]);
+        /* larger circles align */
+        for (var i = 0; i < circles.length; i++) {
+            var c    = circles[i];
+            var ci   = parseInt(c.attr("ci"));
+            var cj   = parseInt(c.attr("cj"));
+            var nx   = get_rand_pos()
+            var ny   = get_rand_pos()
+            var cx   = (isAligned ? nx : diag_coords[ci]);
+            var cy   = (isAligned ? ny : diag_coords[cj]);
 
-                c.transition()
-                 .duration(1000)
-                 .attr("cx", cx)
-                 .attr("cy", cy)
-            }
+            c.transition()
+                .duration(1000)
+                .attr("cx", cx)
+                .attr("cy", cy)
+        }
 
-            /* small circles fly in to alignment */
-            for (var j = 0; j < small_circs.length; j++) {
-                var c = small_circs[j];
-                var ci   = parseInt(c.attr("ci"));
-                var cj   = parseInt(c.attr("cj"));
-                var cx   = (isAligned ? get_corner_x(j) : gaps[ci]);
-                var cy   = (isAligned ? get_corner_y(j) : gaps[cj]);
+        /* small circles fly in to alignment */
+        for (var j = 0; j < small_circs.length; j++) {
+            var c = small_circs[j];
+            var ci   = parseInt(c.attr("ci"));
+            var cj   = parseInt(c.attr("cj"));
+            var cx   = (isAligned ? get_corner_x(j) : gaps[ci]);
+            var cy   = (isAligned ? get_corner_y(j) : gaps[cj]);
 
-                c.transition()
-                 .duration(1000 + ((small_circs.length - j) * 100))
-                 .attr("cx", cx)
-                 .attr("cy", cy);
-            }
+            c.transition()
+                .duration(1000 + ((small_circs.length - j) * 100))
+                .attr("cx", cx)
+                .attr("cy", cy);
+        }
 
-            /* lines extend from one corner to another to enclose the circles */
-            var ax2      = (isAligned ? (dimension / 13) : dimension);
-            var ay2      = (isAligned ? 0 : (dimension - (dimension / 13)));
-            var bx2      = (isAligned ? (dimension - (dimension / 13)) : 0);
-            var by2      = (isAligned ? dimension : (dimension / 13));      
-            var delay    = (isAligned ? 0 : 900);
-            var duration = (isAligned ? 500 : 1500);
-            var opacity  = (isAligned ? 0 : 100); 
+        /* lines extend from one corner to another to enclose the circles */
+        var ax2      = (isAligned ? (dimension / 13) : dimension);
+        var ay2      = (isAligned ? 0 : (dimension - (dimension / 13)));
+        var bx2      = (isAligned ? (dimension - (dimension / 13)) : 0);
+        var by2      = (isAligned ? dimension : (dimension / 13));      
+        var delay    = (isAligned ? 0 : 900);
+        var duration = (isAligned ? 500 : 1500);
+        var opacity  = (isAligned ? 0 : 100); 
 
-            line1.transition()
-                .delay(delay)
-                .duration(duration)
-                .attr("x2", ax2)
-                .attr("y2", ay2)
-                .attr("opacity", opacity);  
+        line1.transition()
+            .delay(delay)
+            .duration(duration)
+            .attr("x2", ax2)
+            .attr("y2", ay2)
+            .attr("opacity", opacity);  
 
-            line2.transition()
-                .delay(delay)
-                .duration(duration)
-                .attr("x2", bx2)
-                .attr("y2", by2)
-                .attr("opacity", opacity);
-                   
-            /* flip align boolean */
-            isAligned = !isAligned;
+        line2.transition()
+            .delay(delay)
+            .duration(duration)
+            .attr("x2", bx2)
+            .attr("y2", by2)
+            .attr("opacity", opacity);
+                
+        /* flip align boolean */
+        isAligned = !isAligned;
         });
 
 		// YOUR CODE SHOULD END HERE
