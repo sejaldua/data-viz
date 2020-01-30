@@ -6,5 +6,6 @@ Created an interactive graphical representation of the word **aligned** using SV
 Click the link to play with it: https://sejaldua.com/data-viz/SVG-Lab/sdua01.html
 
 Or check out the GIF below:
+
 ![svglab-viz](SVG-Lab/svglab-viz.gif)
  
