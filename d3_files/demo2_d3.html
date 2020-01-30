@@ -20,7 +20,10 @@
     <script>
     data = [4, 9, 16, 19, 23, 36];
 
-    var width = 420,
+    var margin = {top: 10, right: 10, bottom: 30, left: 40};
+
+    var width = 400,
+      height = 500,
       barheight = 20;
 
     var barwidth = width / data.length;
@@ -28,28 +31,29 @@
     /* set dims for chart */
     var chart = d3.select(".chart")
       .attr("width", width)
-      .attr("height", barheight * data.length);
+      .attr("height", height);
 
-    var x = d3.scaleLinear()
+    var y = d3.scaleLinear()
       .domain([0, d3.max(data)])
-      .range([0, width]);
+      .range([0, height]);
 
       /* data binding stage, clustering a group of things together */
     var bar = chart.selectAll("g")
       .data(data)
     .enter().append("g")
-      .attr("transform", function(d, i){return "translate(0," + (i * barheight) + ")"; });
+      .attr("transform", function(d, i){return "translate(" + (i * barwidth) + ", 0)"; });
 
     bar.append("rect")
-      .attr("height", barheight - 1)
-      .attr("width", function(d) {return x(d)})
+      .attr("width", barwidth - 1)
+      .attr("height", function(d) {return y(d)})
+      .attr("y", function(d){return height - y(d)})
       .attr("fill", "steelblue");
 
     bar.append("text")
-      .attr("x", function(d) {return x(d) - 3;})
-      .attr("text-anchor", "end")
-      .attr("y", barheight / 2)
-      .attr("dominant-baseline", "middle")
+      .attr("x", barwidth / 2)
+      .attr("text-anchor", "middle")
+      .attr("y", function(d){return height - y(d) + 5})
+      .attr("dominant-baseline", "hanging")
       .attr("fill", "white")
       .text(function(d) {return d})
 
