@@ -22,32 +22,38 @@
     <h1>Data Visualization</h1>
     <p>... (ADD a description) ...</p>
 
-    <svg class="chart" width="420" height="120">
-      <g transform="translate(0,0)">
-        <rect width="40" height="19"></rect>
-        <text x="37" y="9.5" dy=".35em">4</text>
-      </g>
-      <g transform="translate(0,20)">
-        <rect width="80" height="19"></rect>
-        <text x="77" y="9.5" dy=".35em">8</text>
-      </g>
-      <g transform="translate(0,40)">
-        <rect width="150" height="19"></rect>
-        <text x="147" y="9.5" dy=".35em">15</text>
-      </g>
-      <g transform="translate(0,60)">
-        <rect width="160" height="19"></rect>
-        <text x="157" y="9.5" dy=".35em">16</text>
-      </g>
-      <g transform="translate(0,80)">
-        <rect width="230" height="19"></rect>
-        <text x="227" y="9.5" dy=".35em">23</text>
-      </g>
-      <g transform="translate(0,100)">
-        <rect width="420" height="19"></rect>
-        <text x="417" y="9.5" dy=".35em">42</text>
-      </g>
-    </svg>
-    
+    <svg class="chart"></svg>
+    <script>
+    data = [4, 9, 16, 19, 23, 36];
+
+    var width = 420,
+      barheight = 20;
+
+    /* set dims for chart */
+    var chart = d3.select(".chart")
+      .attr("width", width)
+      .attr("height", barheight * data.length);
+
+    var x = d3.scaleLinear()
+      .domain([0, d3.max(data)])
+      .range([0, width]);
+
+      /* data binding stage, clustering a group of things together */
+    var bar = chart.selectAll("g")
+      .data(data)
+    .enter().append("g")
+      .attr("transform", function(d, i){return "translate(0," + (i * barheight) + ")"; });
+
+    bar.append("rect")
+      .attr("height", barheight - 1)
+      .attr("width", function(d) {return x(d)});
+
+    bar.append("text")
+      .attr("x", function(d) {return x(d) - 3;})
+      .attr("y", barheight / 2)
+      .attr("dominant-baseline", "middle")
+      .text(function(d) {return d});
+
+    </script>    
   </body>
 </html>
