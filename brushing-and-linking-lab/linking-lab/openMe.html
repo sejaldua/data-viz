@@ -80,7 +80,19 @@
 			.attr("id", function(d) { return d.data.id; })
 			.attr("width", function(d) { return d.x1 - d.x0; })
 			.attr("height", function(d) { return d.y1 - d.y0; })
-			.attr("fill", function(d) { return color(d.parent.data.id); });
+			.attr("fill", function(d) { return color(d.parent.data.id); })
+			.attr("opacity", "30%")
+			.on("mouseover", handleMouseOver)
+			.on("mouseout", handleMouseOut);
+			
+		// Create Event Handlers for mouse
+		function handleMouseOver() {  // Add interactivity
+			d3.select(this).attr("opacity", "100%");
+		}
+
+		function handleMouseOut() {
+			d3.select(this).attr("opacity", "30%");
+		}
 
 		cell.append("clipPath")
 			.attr("id", function(d) { return "clip-" + d.data.id; })
@@ -133,6 +145,9 @@
 			.innerRadius(function(d) { return Math.max(0, y(d.y0)); })
 			.outerRadius(function(d) { return Math.max(0, y(d.y1)); });
 
+		// function handleMouseOver() {  // Add interactivity
+		// 	d3.selectAll('arc').on("click", function () { $(this).attr("fill", function{ return color(d.data.id)})});
+		// };
 
 		var svg = d3.select("#hierarchy2").append("svg")
 			.attr("width", width - margin)
@@ -147,8 +162,27 @@
 			.data(partition(root).descendants())
 			.enter().append("path")
 			.attr("d", arc)
+			.attr("id", function(d) { return d.data.id; })
+			.attr("class", function(d) { return "node " + d.data.id; })
 			.attr("display", function(d) { return d.depth ? null : "none"; })
-			.style("fill", function(d) { return color((d.children ? d : d.parent).data.id); });
+			.attr("fill", function(d) { return color((d.children ? d : d.parent).data.id); })
+			.attr("opacity", "30%");
+			// .on("mouseover", function(d) { highlight(d.data.id); })
+			// .on("mouseout", function(d) { highlight(null); });
+			  
+			
+		// Create Event Handlers for mouse
+		function handleMouseOver() {  // Add interactivity
+
+			// Use D3 to select element, change color and size
+			d3.select(this).style("opacity", "100%");
+
+		}
+
+		function handleMouseOut(d, i) {
+			d3.select(this).style("opacity", "30%");
+		}
+
 
 		svg.selectAll("text")
 			.data(partition(root).descendants().filter(function(d) { return x(d.x1)-x(d.x0) > .05; }))
