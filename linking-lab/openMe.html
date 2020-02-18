@@ -39,7 +39,7 @@
 		/*
 		 * Name: Sejal Dua
 		 * Treemap
-		 * Nodelink
+		 * Sunburst
 		 */
 
 		/* TREEMAP */
@@ -71,7 +71,6 @@
 
 		treemap(root);
 
-		console.log("hello world");
 
 		var cell = svg.selectAll("g")
 			.data(root.leaves())
@@ -80,7 +79,7 @@
 
 		cell.append("rect")
 			.attr("id", function(d) { return d.data.id; })
-			.attr("class", function(d) {return "node" + (d.children ? d : d.parent).data.id})
+			.attr("class", function(d) {return d.parent.data.id})
 			.attr("width", function(d) { return d.x1 - d.x0; })
 			.attr("height", function(d) { return d.y1 - d.y0; })
 			.attr("fill", function(d) { return color(d.parent.data.id); })
@@ -159,7 +158,6 @@
 			.enter().append("path")
 			.attr("d", arc)
 			.attr("id", function(d) { return d.data.id; })
-			// .attr("class", function(d) { return "node" + d.parent.data.id; })
 			.attr("display", function(d) { return d.depth ? null : "none"; })
 			.attr("fill", function(d) { return color((d.children ? d : d.parent).data.id); })
 			.attr("opacity", "30%")
@@ -167,25 +165,20 @@
 			.on("click", function(d) { highlight(d, "30%"); });
 			  
 		function highlight(d, opacity) {
-			d3.select("path[id='" + d.data.id + "']").attr("opacity", opacity);
-			d3.select("rect[id='" + d.data.id + "']").attr("opacity", opacity);
-			// else {
-			// 	d3.selectAll("rect.node" + d.data.id + "']").attr("opacity", "100%");
-			// }
+			if (!d.children) {
+				d3.select("path[id='" + d.data.id + "']").attr("opacity", opacity);
+				d3.select("rect[id='" + d.data.id + "']").attr("opacity", opacity);
+			} else {
+				d3.select("path[id='" + d.data.id + "']").attr("opacity", opacity);
+				d3.selectAll("rect[class='" + d.data.id + "']").each(
+					function(p, i){
+						console.log("sup" + p.data.id);
+						d3.select("path[id='" + p.data.id + "']").attr("opacity", opacity);
+						d3.select("rect[id='" + p.data.id + "']").attr("opacity", opacity);
+					}
+				);
+			}
 		}
-			
-		// Create Event Handlers for mouse
-		function handleMouseOver() {  // Add interactivity
-
-			// Use D3 to select element, change color and size
-			d3.select(this).style("opacity", "100%");
-
-		}
-
-		function handleMouseOut(d, i) {
-			d3.select(this).style("opacity", "30%");
-		}
-
 
 		svg.selectAll("text")
 			.data(partition(root).descendants().filter(function(d) { return x(d.x1)-x(d.x0) > .05; }))
