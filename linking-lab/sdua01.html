@@ -40,7 +40,10 @@
 		 * Name: Sejal Dua
 		 * Treemap
 		 * Sunburst
-		 */
+		 * 
+		 * hover over nodes to change opacity to 100%
+		 * click on nodes to reset opacity to 40%
+		 */ 
 
 		/* TREEMAP */
 
@@ -86,8 +89,6 @@
 			.attr("opacity", "30%")
 			.on("mouseover", function(d) { highlight(d, "100%"); })
 			.on("click", function(d) { highlight(d, "30%"); });
-			
-
 
 		cell.append("clipPath")
 			.attr("id", function(d) { return "clip-" + d.data.id; })
@@ -140,10 +141,6 @@
 			.innerRadius(function(d) { return Math.max(0, y(d.y0)); })
 			.outerRadius(function(d) { return Math.max(0, y(d.y1)); });
 
-		// function handleMouseOver() {  // Add interactivity
-		// 	d3.selectAll('arc').on("click", function () { $(this).attr("fill", function{ return color(d.data.id)})});
-		// };
-
 		var svg = d3.select("#hierarchy2").append("svg")
 			.attr("width", width - margin)
 			.attr("height", height - margin)
@@ -172,7 +169,7 @@
 				d3.select("path[id='" + d.data.id + "']").attr("opacity", opacity);
 				d3.selectAll("rect[class='" + d.data.id + "']").each(
 					function(p, i){
-						console.log("sup" + p.data.id);
+						console.log(p.data.id);
 						d3.select("path[id='" + p.data.id + "']").attr("opacity", opacity);
 						d3.select("rect[id='" + p.data.id + "']").attr("opacity", opacity);
 					}
