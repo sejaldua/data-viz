@@ -11,38 +11,34 @@
 	</div>
 	<div id="hierarchy2">
 	</div>
-	<style>
-		.node circle {
-			fill: #999;
-		}
-
-		.node text {
-			font: 10px sans-serif;
-		}
-
-		.node--internal circle {
-			fill: #555;
-		}
-
-		.node--internal text {
-			text-shadow: 0 1px 0 #fff, 0 -1px 0 #fff, 1px 0 0 #fff, -1px 0 0 #fff;
-		}
-
-		.link {
-			fill: none;
-			stroke: #555;
-			stroke-opacity: 0.4;
-			stroke-width: 1.5px;
-		}
-	</style>
 	<script>
 		/*
 		 * Name: Sejal Dua
+		 * Date: 2/18/2020
+		 * Prof: Megan Monroe
+		 * Assn: Linking Lab
+		 * 
 		 * Treemap
 		 * Sunburst
 		 * 
-		 * hover over nodes to change opacity to 100%
-		 * click on nodes to reset opacity to 40%
+		 * IMPLEMENTATION NOTES
+		 * - hover over nodes to change opacity to 100%
+		 * - click on nodes to reset opacity to 30%
+		 * - the fastest way to select multiple nodes at once is to hover
+		 *   over the inner arcs on the sunburst viz because they select
+		 *   all of the children of that node
+		 * 
+		 * WHY IT'S SPECIAL
+		 * - The colors of the two hierarchical visualizations match.
+		 * - The linking effects are bidirectional.
+		 * 
+		 * HOURS SPENT: probably > 10 rip (d3 bugs suck up way too much of my time)
+		 * 
+		 * FUTURE DIRECTION
+		 * - I really wanted to have a text object at the top of the viz showing
+		 *   the path to the current node that the cursor is hovering over.
+		 *   Example: flare > util > Strings
+		 * - I would also want to implement some kind of brushing and zooming.
 		 */ 
 
 		/* TREEMAP */
@@ -68,7 +64,9 @@
 			.paddingInner(1);
 
 		var root = d3.hierarchy(flare)
-			.eachBefore(function(d) { d.data.id = (d.parent ? d.parent.data.id + "." : "") + d.data.name; })
+			.eachBefore(function(d) { 
+				d.data.id = (d.parent ? d.parent.data.id + "." : "") + d.data.name; 
+			})
 			.sum(sumBySize)
 			.sort(function(a, b) { return b.height - a.height || b.value - a.value; });
 
@@ -145,7 +143,8 @@
 			.attr("width", width - margin)
 			.attr("height", height - margin)
 			.append("g")
-			.attr("transform", "translate(" + ((width / 2) + (margin / 2)) + "," + ((height / 2) + (margin / 2)) + ")");
+			.attr("transform", "translate(" + ((width / 2) + (margin / 2)) + "," + 
+				((height / 2) + (margin / 2)) + ")");
 		
 		var root = d3.hierarchy(flare);
 		root.sum(function(d) { return d.size; });
@@ -178,13 +177,16 @@
 		}
 
 		svg.selectAll("text")
-			.data(partition(root).descendants().filter(function(d) { return x(d.x1)-x(d.x0) > .05; }))
+			.data(partition(root).descendants().filter(function(d) { 
+				return x(d.x1)-x(d.x0) > .05; 
+			}))
 			.enter().append("text")
 			.attr("transform", function(d) { 
 				var rotation
 				if(d.parent){
 					offset =  d.x1 + .005 > 1 ? d.x1 + .005 - 1 : d.x1 + .005;
-					rotation = (Math.max(0, Math.min(2 * Math.PI, x(offset)))  - Math.PI / 2) / Math.PI * 180;
+					rotation = (Math.max(0, Math.min(2 * Math.PI, x(offset)))  - 
+						Math.PI / 2) / Math.PI * 180;
 				}else rotation = 0;
 				return "rotate(" + rotation + ")"; })
 			.attr("x", function(d) { return Math.max(0, y(d.y0)); })
