@@ -65,6 +65,7 @@ h4 {
 .legend {
   float: right;
   font-size: 0.8rem;
+  margin-top: 20px;
   margin-bottom: 50px;
   margin-right: 50px;
 }
@@ -74,11 +75,68 @@ h4 {
   display: block;
 }
 
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+  margin-top: 20px;
+}
+
+.switch input {display:none;}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: #2196F3;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
+}
+
+.background {
+  fill: none;
+  pointer-events: all;
+}
+
 </style>
 <h1></h1></br>
 <h4>Data Collection Period (1 week): 9/7/2016 - 10/3/2016</h4>
 <h4>Please visit <a href="https://droughtmonitor.unl.edu/">U.S. Drought Monitor</a> for more info</h4> 
 <div class='map-div'></div>
+<label class="switch">
+  <input type="checkbox">
+  <div class="slider"></div>
+</label>
 <script src="js/d3.v4.min.js"></script>
 <script src="js/topojson.v1.min.js"></script>
 <script>
@@ -142,9 +200,51 @@ function makeMapDSCI(map, us)
   var path = d3.geoPath()
     .projection(projection);
 
+  // ZOOOOOM BABYYYYY
+
+  var centered;
+
+  var zoomSettings = {
+    duration: 1000,
+    ease: d3.easeCubicOut,
+    zoomLevel: 4
+  };
+
+  svg.append('rect')
+    .attr('class', 'background')
+    .attr('width', width)
+    .attr('height', height)
+    .on('click', clicked);
+
+  var g = svg.append('g');
+
+  function clicked(d) {
+    console.log("clicked");
+    var x;
+    var y;
+    var zoomLevel;
+
+    if (d && centered !== d) {
+      var centroid = path.centroid(d);
+      x = centroid[0];
+      y = centroid[1];
+      zoomLevel = zoomSettings.zoomLevel;
+      centered = d;
+    } else {
+      x = width / 2;
+      y = height / 2;
+      zoomLevel = 1;
+      centered = null;
+    }
+    g.transition()
+      .duration(zoomSettings.duration)
+      .ease(zoomSettings.ease)
+      .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')scale(' + zoomLevel + ')translate(' + -x + ',' + -y + ')');
+  }
+
   var tooltip = map.append('div').attr('class', 'tooltip');
 
-  svg.append("g")
+  g.append("g")
       .attr("class", "counties")
     .selectAll("path")
       .data(topojson.feature(us, us.objects.counties).features)
@@ -152,7 +252,8 @@ function makeMapDSCI(map, us)
       .attr("class", function(d) { return quantize(dsciById.get(d.id)); })
       .attr("d", path)
       .on("mouseover", handleMouseover)
-      .on("mouseout", handleMouseout);
+      .on("mouseout", handleMouseout)
+      .on("click", clicked);
 
   // TOOLTIP MOUSEOVER & MOUSEOUT FUNCTIONS
 
@@ -171,10 +272,11 @@ function makeMapDSCI(map, us)
       .style('opacity', 0);
   }
 
-  svg.append("path")
+  g.append("path")
     .datum(topojson.mesh(us, us.objects.states, function(a, b) { return a !== b; }))
     .attr("class", "states")
-    .attr("d", path);
+    .attr("d", path)
+    .on("click", clicked);
 
   // LEGEND
   
@@ -206,7 +308,7 @@ function makeMapDSCI(map, us)
     .append('text')
       .attr('x', function(d,i) {return i * 30 + 2;})
       .attr('y', 25)
-      .text(function(d,i) {return d;});
+      .text(function(d,i) {if (i % 2 == 0) return d;});
 
   var label = legend.append('span')
     .attr('class', 'label')
@@ -320,12 +422,31 @@ function makeMap(map, us)
 } 
 
 function ready(error, us) {
+
   if (error) throw error;
-  makeMap(map, us);
+  var state = 0;
+  makeMapDSCI(map, us);
+  var checkbox = document.querySelector('input[type="checkbox"]');
+
+  checkbox.addEventListener('change', function () {
+    if (checkbox.checked) {
+      state = 1;
+      makeMap(map, us);
+    } else {
+      state = 0;
+      makeMapDSCI(map, us);
+    }
+  });
+  console.log(state);
   var timer;
   window.addEventListener('resize', function () {
     clearTimeout(timer);
-    timer = setTimeout(function() {makeMap(map, us);}, 200);
+    timer = setTimeout(function() {
+      if (state == 0)
+        makeMapDSCI(map, us);
+      else
+        makeMap(map, us)
+      }, 200);
   });
 }
 
