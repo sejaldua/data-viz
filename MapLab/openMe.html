@@ -41,6 +41,13 @@ h4 {
 .q8-10 { fill:rgb(186,116,56); }
 .q9-10 { fill:rgb(180,105,45); }
 
+.Nothing {fill:#64635c;}
+.D5      {fill:#fbf66d;}
+.D1      {fill:#ebc180;}
+.D2      {fill:#ef741e;}
+.D3      {fill:#e40101;}
+.D4      {fill:#6e0102;}
+
 .tooltip {
   background: #fff;
   width: 140px;
@@ -80,13 +87,25 @@ h4 {
 
 var dsciById = d3.map();
 var dataById = d3.map();
+var levels = d3.map();
 
 d3.queue()
-    .defer(d3.json, "js/us.json")
-    .defer(d3.tsv, "tsv/drought.tsv", function(d) { 
-      dataById.set(d.FIPS, d);
-      dsciById.set(d.FIPS, ((+d.D0)*1+(+d.D1)*2+(+d.D2)*3+(+d.D3)*4+(+d.D4)*5)/15) ;})
-    .await(ready);
+  .defer(d3.json, "js/us.json")
+  .defer(d3.tsv, "tsv/drought.tsv", function(d) { 
+    dataById.set(d.FIPS, d);
+    dsciById.set(d.FIPS, ((+d.D0)*1+(+d.D1)*2+(+d.D2)*3+(+d.D3)*4+(+d.D4)*5)/15);
+
+    var level = "Nothing";
+    d.Nothing = Number(d.Nothing);
+    if (Number(d.D0) > 0) level = "D0";
+    if (Number(d.D1) > 0) level = "D1";
+    if (Number(d.D2) > 0) level = "D2";
+    if (Number(d.D3) > 0) level = "D3";
+    if (Number(d.D4) > 0) level = "D4";
+    levels.set(d.FIPS, level);
+    
+  })
+  .await(ready);
 
 var quantize = d3.scaleQuantize()
     .domain([0, 100])
@@ -102,7 +121,7 @@ var map = d3.select('.map-div')
 
 document.getElementById("m").style.cursor = "crosshair";
 
-function makeMap(map, us)
+function makeMapDSCI(map, us)
 {
   // clear map
   map.selectAll("*").remove();
@@ -138,7 +157,7 @@ function makeMap(map, us)
 
   function handleMouseover(d) {
     tooltip.transition()
-      .duration(60)
+      .duration(200)
       .style('opacity', 0.6);
     tooltip.html(dataById.get(d.id).County + " (" + dataById.get(d.id).State + ")<br/>DSCI: " + Math.round(dsciById.get(d.id) * 15))
       .style('left', (d3.event.pageX - 70) + 'px')
@@ -192,6 +211,102 @@ function makeMap(map, us)
     .attr('class', 'label')
     .html("Drought Severity and Coverage Index");
 }
+
+
+function makeMap(map, us) 
+{
+  // clear map
+  map.selectAll("*").remove();
+
+  // set map dimensions based on current window size
+  var width = map.node().getBoundingClientRect().width;
+  var height = width * 0.625;
+
+  var svg = map.append("svg")
+    .attr("width", width)
+    .attr("height", height)
+
+  var projection = d3.geoAlbersUsa()
+    .scale(width * 1.33)
+    .translate([width / 2, height / 2]);
+
+  var path = d3.geoPath()
+    .projection(projection);
+
+  var tooltip = map.append('div').attr('class', 'tooltip');
+
+  svg.append("g")
+      .attr("class", "counties")
+    .selectAll("path")
+      .data(topojson.feature(us, us.objects.counties).features)
+    .enter().append("path")
+      .attr("class", function(d) { 
+        county = levels.get(d.id); 
+        if (county == 'D0')
+          return 'D5'; 
+        else
+          return county;
+      })
+      .attr("d", path)
+      .on("mouseover", handleMouseover)
+      .on("mouseout", handleMouseout);
+
+  // TOOLTIP MOUSEOVER & MOUSEOUT FUNCTIONS
+
+  function handleMouseover(d) {
+    tooltip.transition()
+      .duration(60)
+      .style('opacity', 0.6);
+    tooltip.html(dataById.get(d.id).County + " (" + dataById.get(d.id).State + ")<br/>Level: " + levels.get(d.id))
+      .style('left', (d3.event.pageX - 70) + 'px')
+      .style('top', (d3.event.pageY - 50) + 'px');
+  }
+
+  function handleMouseout(d) {
+    tooltip.transition()
+      .duration(200)
+      .style('opacity', 0);
+  }
+
+  svg.append("path")
+    .datum(topojson.mesh(us, us.objects.states, function(a, b) { return a !== b; }))
+    .attr("class", "states")
+    .attr("d", path);
+
+  // LEGEND
+  
+  var legend = map.append("div")
+    .attr('class', 'legend');
+
+  const size = 30;
+  var keys = ["Nothing", "D0", "D1", "D2", "D3", "D4"];
+
+  var scale = legend.append('svg')
+    .attr('width', size * keys.length)
+    .attr('height', size)
+    .append('g');
+
+  scale.selectAll('rect')
+    .data(keys)
+    .enter()
+    .append('rect')
+      .attr("class", function(d) { return d; })
+      .attr('height', size)
+      .attr('width', size)
+      .attr('y', function(d, i) {return i * size;});
+
+  scale.selectAll('text')
+    .data(keys)
+    .enter()
+    .append('text')
+      .attr('x', 25)
+      .attr('y', function (d, i) {return i * size})
+      .text(function(d,i) {return d;});
+
+  var label = legend.append('span')
+    .attr('class', 'label')
+    .html("Drought Severity and Coverage Index");
+} 
 
 function ready(error, us) {
   if (error) throw error;
