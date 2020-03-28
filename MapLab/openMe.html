@@ -41,7 +41,8 @@ h4 {
 .q8-10 { fill:rgb(186,116,56); }
 .q9-10 { fill:rgb(180,105,45); }
 
-.Nothing {fill:#64635c;}
+.Nothing {fill:#64635c;} 
+.Nothing {fill:#DADBD9;}
 .D5      {fill:#fbf66d;}
 .D1      {fill:#ebc180;}
 .D2      {fill:#ef741e;}
@@ -158,7 +159,7 @@ function makeMapDSCI(map, us)
   function handleMouseover(d) {
     tooltip.transition()
       .duration(200)
-      .style('opacity', 0.6);
+      .style('opacity', 0.5);
     tooltip.html(dataById.get(d.id).County + " (" + dataById.get(d.id).State + ")<br/>DSCI: " + Math.round(dsciById.get(d.id) * 15))
       .style('left', (d3.event.pageX - 70) + 'px')
       .style('top', (d3.event.pageY - 50) + 'px');
@@ -254,12 +255,24 @@ function makeMap(map, us)
   // TOOLTIP MOUSEOVER & MOUSEOUT FUNCTIONS
 
   function handleMouseover(d) {
+    level = levels.get(d.id);
     tooltip.transition()
       .duration(60)
-      .style('opacity', 0.6);
-    tooltip.html(dataById.get(d.id).County + " (" + dataById.get(d.id).State + ")<br/>Level: " + levels.get(d.id))
-      .style('left', (d3.event.pageX - 70) + 'px')
-      .style('top', (d3.event.pageY - 50) + 'px');
+      .style('opacity', 0.5);
+    if (level == "Nothing")
+      tooltip.html(dataById.get(d.id).County + " (" + dataById.get(d.id).State + ")<br/>" + level + ": " + dataById.get(d.id).Nothing);
+    else if (level == "D0")
+      tooltip.html(dataById.get(d.id).County + " (" + dataById.get(d.id).State + ")<br/>" + level + ": " + dataById.get(d.id).D0);
+    else if (level == "D1")
+      tooltip.html(dataById.get(d.id).County + " (" + dataById.get(d.id).State + ")<br/>" + level + ": " + dataById.get(d.id).D1);
+    else if (level == "D2")
+      tooltip.html(dataById.get(d.id).County + " (" + dataById.get(d.id).State + ")<br/>" + level + ": " + dataById.get(d.id).D2);
+    else if (level == "D3")
+      tooltip.html(dataById.get(d.id).County + " (" + dataById.get(d.id).State + ")<br/>" + level + ": " + dataById.get(d.id).D3);
+    else if (level == "D4")
+      tooltip.html(dataById.get(d.id).County + " (" + dataById.get(d.id).State + ")<br/>" + level + ": " + dataById.get(d.id).D4);
+    tooltip.style('left', (d3.event.pageX - 70) + 'px')
+    tooltip.style('top', (d3.event.pageY - 50) + 'px');
   }
 
   function handleMouseout(d) {
@@ -280,32 +293,30 @@ function makeMap(map, us)
 
   const size = 30;
   var keys = ["Nothing", "D0", "D1", "D2", "D3", "D4"];
+  var labels = ["None", "D0: Abnormally Dry", "D1: Moderate Drought", "D2: Severe Drought", "D3: Extreme Drought", "D4: Exceptional Drought"]
 
   var scale = legend.append('svg')
     .attr('width', size * keys.length)
-    .attr('height', size)
+    .attr('height', size * keys.length)
     .append('g');
 
   scale.selectAll('rect')
     .data(keys)
     .enter()
     .append('rect')
-      .attr("class", function(d) { return d; })
+      .attr("class", function(d) { if (d == "D0") return "D5"; return d; })
       .attr('height', size)
       .attr('width', size)
+      .attr('x', 25)
       .attr('y', function(d, i) {return i * size;});
 
   scale.selectAll('text')
     .data(keys)
     .enter()
     .append('text')
-      .attr('x', 25)
-      .attr('y', function (d, i) {return i * size})
-      .text(function(d,i) {return d;});
-
-  var label = legend.append('span')
-    .attr('class', 'label')
-    .html("Drought Severity and Coverage Index");
+      .attr('x', size * 2)
+      .attr('y', function (d, i) {return i * size + 18;})
+      .text(function(d,i) { return labels[i];});
 } 
 
 function ready(error, us) {
