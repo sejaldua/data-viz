@@ -2,9 +2,28 @@
 <meta charset="utf-8">
 <style>
 
+body {
+  font-family: 'Helvetica', sans-serif;
+}
+
 h1 {
   margin-bottom: -10px;
   text-align: center;
+}
+
+h2, h3 {
+  font-size: 16px;
+  margin-top: 25px;
+  margin-left: 10px;
+  float: left;
+}
+
+h2 {
+  margin-right: 10px;
+}
+
+h3 {
+  font-weight: normal;
 }
 
 h4 {
@@ -44,6 +63,7 @@ h4 {
 .Nothing {fill:#64635c;} 
 .Nothing {fill:#DADBD9;}
 .D5      {fill:#fbf66d;}
+.D5      {fill:#F9F7AC;}
 .D1      {fill:#ebc180;}
 .D2      {fill:#ef741e;}
 .D3      {fill:#e40101;}
@@ -54,7 +74,7 @@ h4 {
   width: 140px;
   border-radius: 10px;
   border: 1px solid #c9c9c9;
-  font-size: 0.6rem;
+  font-size: 0.6srem;
   padding: 5px;
   position: absolute;
   text-align: center;
@@ -64,7 +84,7 @@ h4 {
 
 .legend {
   float: right;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   margin-top: 20px;
   margin-bottom: 50px;
   margin-right: 50px;
@@ -81,6 +101,8 @@ h4 {
   width: 60px;
   height: 34px;
   margin-top: 20px;
+  margin-bottom: 20px;
+  float: left;
 }
 
 .switch input {display:none;}
@@ -129,17 +151,45 @@ input:checked + .slider:before {
 }
 
 </style>
+<body>
 <h1></h1></br>
 <h4>Data Collection Period (1 week): 9/7/2016 - 10/3/2016</h4>
 <h4>Please visit <a href="https://droughtmonitor.unl.edu/">U.S. Drought Monitor</a> for more info</h4> 
-<div class='map-div'></div>
-<label class="switch">
-  <input type="checkbox">
-  <div class="slider"></div>
-</label>
+<div class='map-div'>
+  <div>
+    <h2>Mode: </h2>
+    <label class="switch">
+      <input type="checkbox">
+      <div class="slider"></div>
+    </label>
+    <h3></h3>
+  </div>
+</div>
+</body>
 <script src="js/d3.v4.min.js"></script>
 <script src="js/topojson.v1.min.js"></script>
 <script>
+  /*
+    * Name: Sejal Dua
+    * Date: 3/31/2020
+    * Prof: Megan Monroe
+    * Assn: Map Wrangling Lab
+    * 
+    * IMPLEMENTATION NOTES
+    * - hover over counties to activate tooltip feature
+    * - toggle the switch to change map modes
+    * - zooooom
+    *   - click on a county to zoom in
+    *   - click on anything that is not a county within the map to zoom out
+    *     NOTE: if there are no non-county regions shown within the map frame,
+    *           click on counties close to a coast of the US so that you can
+    *           find some whitespace to click on
+    * 
+    * HOURS SPENT: 12
+    *
+    * FUTURE DIRECTIONS
+    *
+    */ 
 
 
 // NOT SIZE-DEPENDENT
@@ -150,10 +200,11 @@ var levels = d3.map();
 
 d3.queue()
   .defer(d3.json, "js/us.json")
-  .defer(d3.tsv, "tsv/drought.tsv", function(d) { 
+  .defer(d3.tsv, "tsv/drought.tsv", function(d) {
+    // for weighted sum (DSCI) map 
     dataById.set(d.FIPS, d);
     dsciById.set(d.FIPS, ((+d.D0)*1+(+d.D1)*2+(+d.D2)*3+(+d.D3)*4+(+d.D4)*5)/15);
-
+    // for cumulative classification (levels) map
     var level = "Nothing";
     d.Nothing = Number(d.Nothing);
     if (Number(d.D0) > 0) level = "D0";
@@ -166,6 +217,7 @@ d3.queue()
   })
   .await(ready);
 
+// color quantize function
 var quantize = d3.scaleQuantize()
     .domain([0, 100])
     .range(d3.range(10).map(function(i) { return "q" + i + "-10"; }));
@@ -180,6 +232,8 @@ var map = d3.select('.map-div')
 
 document.getElementById("m").style.cursor = "crosshair";
 
+
+// MODE 0: WEIGHTED SUM DSCI
 function makeMapDSCI(map, us)
 {
   // clear map
@@ -189,6 +243,7 @@ function makeMapDSCI(map, us)
   var width = map.node().getBoundingClientRect().width;
   var height = width * 0.625;
 
+  // sizing and scaling
   var svg = map.append("svg")
     .attr("width", width)
     .attr("height", height)
@@ -219,7 +274,6 @@ function makeMapDSCI(map, us)
   var g = svg.append('g');
 
   function clicked(d) {
-    console.log("clicked");
     var x;
     var y;
     var zoomLevel;
@@ -244,6 +298,7 @@ function makeMapDSCI(map, us)
 
   var tooltip = map.append('div').attr('class', 'tooltip');
 
+  // counties
   g.append("g")
       .attr("class", "counties")
     .selectAll("path")
@@ -260,7 +315,7 @@ function makeMapDSCI(map, us)
   function handleMouseover(d) {
     tooltip.transition()
       .duration(200)
-      .style('opacity', 0.5);
+      .style('opacity', 0.7);
     tooltip.html(dataById.get(d.id).County + " (" + dataById.get(d.id).State + ")<br/>DSCI: " + Math.round(dsciById.get(d.id) * 15))
       .style('left', (d3.event.pageX - 70) + 'px')
       .style('top', (d3.event.pageY - 50) + 'px');
@@ -272,6 +327,7 @@ function makeMapDSCI(map, us)
       .style('opacity', 0);
   }
 
+  // states
   g.append("path")
     .datum(topojson.mesh(us, us.objects.states, function(a, b) { return a !== b; }))
     .attr("class", "states")
@@ -315,7 +371,7 @@ function makeMapDSCI(map, us)
     .html("Drought Severity and Coverage Index");
 }
 
-
+// MODE 1: CUMULATIVE CLASSIFICATION
 function makeMap(map, us) 
 {
   // clear map
@@ -325,6 +381,7 @@ function makeMap(map, us)
   var width = map.node().getBoundingClientRect().width;
   var height = width * 0.625;
 
+  // sizing and scaling
   var svg = map.append("svg")
     .attr("width", width)
     .attr("height", height)
@@ -336,9 +393,51 @@ function makeMap(map, us)
   var path = d3.geoPath()
     .projection(projection);
 
+  // ZOOOOOM BABYYYYY
+
+  var centered;
+
+  var zoomSettings = {
+    duration: 1000,
+    ease: d3.easeCubicOut,
+    zoomLevel: 4
+  };
+
+  svg.append('rect')
+    .attr('class', 'background')
+    .attr('width', width)
+    .attr('height', height)
+    .on('click', clicked);
+
+  var g = svg.append('g');
+
+  function clicked(d) {
+    var x;
+    var y;
+    var zoomLevel;
+
+    if (d && centered !== d) {
+      var centroid = path.centroid(d);
+      x = centroid[0];
+      y = centroid[1];
+      zoomLevel = zoomSettings.zoomLevel;
+      centered = d;
+    } else {
+      x = width / 2;
+      y = height / 2;
+      zoomLevel = 1;
+      centered = null;
+    }
+    g.transition()
+      .duration(zoomSettings.duration)
+      .ease(zoomSettings.ease)
+      .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')scale(' + zoomLevel + ')translate(' + -x + ',' + -y + ')');
+  }
+
   var tooltip = map.append('div').attr('class', 'tooltip');
 
-  svg.append("g")
+  // counties
+  g.append("g")
       .attr("class", "counties")
     .selectAll("path")
       .data(topojson.feature(us, us.objects.counties).features)
@@ -352,7 +451,8 @@ function makeMap(map, us)
       })
       .attr("d", path)
       .on("mouseover", handleMouseover)
-      .on("mouseout", handleMouseout);
+      .on("mouseout", handleMouseout)
+      .on("click", clicked);
 
   // TOOLTIP MOUSEOVER & MOUSEOUT FUNCTIONS
 
@@ -360,7 +460,7 @@ function makeMap(map, us)
     level = levels.get(d.id);
     tooltip.transition()
       .duration(60)
-      .style('opacity', 0.5);
+      .style('opacity', 0.7);
     if (level == "Nothing")
       tooltip.html(dataById.get(d.id).County + " (" + dataById.get(d.id).State + ")<br/>" + level + ": " + dataById.get(d.id).Nothing);
     else if (level == "D0")
@@ -383,10 +483,12 @@ function makeMap(map, us)
       .style('opacity', 0);
   }
 
-  svg.append("path")
+  // states
+  g.append("path")
     .datum(topojson.mesh(us, us.objects.states, function(a, b) { return a !== b; }))
     .attr("class", "states")
-    .attr("d", path);
+    .attr("d", path)
+    .on("click", clicked);
 
   // LEGEND
   
@@ -421,23 +523,36 @@ function makeMap(map, us)
       .text(function(d,i) { return labels[i];});
 } 
 
+// RUN IT
+
 function ready(error, us) {
 
   if (error) throw error;
+
+  // default map showed initially
   var state = 0;
+  var mode = d3.select("h3")
+    .text("Weighted Sum (DSCI)");
   makeMapDSCI(map, us);
+  
   var checkbox = document.querySelector('input[type="checkbox"]');
 
+  // toggle switch listener
   checkbox.addEventListener('change', function () {
     if (checkbox.checked) {
       state = 1;
+      mode = d3.select("h3")
+        .text("Classification (Cumulative)");
       makeMap(map, us);
     } else {
       state = 0;
+      mode = d3.select("h3")
+        .text("Weighted Sum (DSCI)");
       makeMapDSCI(map, us);
     }
   });
-  console.log(state);
+  
+  // window resize listener
   var timer;
   window.addEventListener('resize', function () {
     clearTimeout(timer);
